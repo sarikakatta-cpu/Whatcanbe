@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>whatcanbe.in — Create, Share, Inspire</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+    * { font-family: 'Inter', sans-serif; }
+    body { background: #020d1f; min-height: 100vh; }
+
+    /* Glassmorphism */
+    .glass-card {
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .glass-nav {
+      background: rgba(2,13,31,0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+
+    /* Inputs */
+    .input-field {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 0.75rem;
+      padding: 0.65rem 1rem;
+      color: white;
+      width: 100%;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .input-field:focus { border-color: #10b981; }
+    .input-field::placeholder { color: #64748b; }
+
+    /* Buttons */
+    .btn-primary {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white; font-weight: 600;
+      padding: 0.65rem 1.5rem;
+      border-radius: 0.75rem;
+      transition: all 0.2s;
+      border: none; cursor: pointer;
+    }
+    .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 8px 25px rgba(16,185,129,0.35); }
+    .btn-secondary {
+      background: rgba(255,255,255,0.08);
+      color: #e2e8f0; font-weight: 500;
+      padding: 0.65rem 1.5rem;
+      border-radius: 0.75rem;
+      border: 1px solid rgba(255,255,255,0.12);
+      cursor: pointer; transition: all 0.2s;
+    }
+    .btn-secondary:hover { background: rgba(255,255,255,0.14); }
+
+    /* Hero BG */
+    .hero-bg {
+      background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(16,185,129,0.18) 0%, transparent 60%),
+                  radial-gradient(ellipse 60% 50% at 80% 80%, rgba(30,64,175,0.14) 0%, transparent 60%),
+                  #020d1f;
+    }
+    .fire-glow { filter: drop-shadow(0 0 18px rgba(251,146,60,0.5)); }
+
+    /* Animated gradient text */
+    .gradient-text {
+      background: linear-gradient(135deg, #10b981 0%, #3b82f6 50%, #10b981 100%);
+      background-size: 200%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: gradientShift 4s ease infinite;
+    }
+    @keyframes gradientShift { 0%,100%{background-position:0%} 50%{background-position:100%} }
+
+    /* Float animation */
+    .float { animation: float 6s ease-in-out infinite; }
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+
+    /* Fade in */
+    .fade-in { animation: fadeIn 0.5s ease forwards; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+
+    /* Line clamp */
+    .line-clamp-3 { display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+    .line-clamp-1 { display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width:6px; }
+    ::-webkit-scrollbar-track { background:#020d1f; }
+    ::-webkit-scrollbar-thumb { background:#10b981; border-radius:3px; }
+
+    /* Mobile menu */
+    #mobile-menu { display: none; }
+    #mobile-menu.open { display: flex; }
+  </style>
+</head>
+<body class="text-white">
+
+<!-- ─── NAVBAR ─────────────────────────────────────────────────────────────── -->
+<nav class="glass-nav fixed top-0 left-0 right-0 z-50">
+  <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+    <!-- Logo -->
+    <button onclick="showPage('home')" class="flex items-center gap-2 font-black text-xl tracking-tight">
+      <span class="text-2xl fire-glow">🔥</span>
+      <span class="gradient-text">whatcanbe</span><span class="text-slate-400">.in</span>
+    </button>
+
+    <!-- Desktop Nav -->
+    <div class="hidden md:flex items-center gap-2">
+      <button onclick="showPage('home')" class="btn-secondary py-1.5 px-4 text-sm">Home</button>
+      <button onclick="showPage('feed')" class="btn-secondary py-1.5 px-4 text-sm">Blog Feed</button>
+      <button onclick="showPage('create')" class="btn-secondary py-1.5 px-4 text-sm">Write</button>
+      <button onclick="showPage('contact')" class="btn-secondary py-1.5 px-4 text-sm">Contact</button>
+    </div>
+
+    <div class="hidden md:flex items-center gap-2">
+      <!-- Logged out -->
+      <div id="nav-auth" class="flex items-center gap-2">
+        <button onclick="showPage('login')" class="btn-secondary py-1.5 px-4 text-sm">Log In</button>
+        <button onclick="showPage('signup')" class="btn-primary py-1.5 px-4 text-sm">Sign Up</button>
+      </div>
+      <!-- Logged in -->
+      <div id="nav-user" class="hidden flex items-center gap-2">
+        <button onclick="showPage('messages')" class="btn-secondary py-1.5 px-4 text-sm">✉️ DMs</button>
+        <button onclick="showPage('profile',{})" class="btn-secondary py-1.5 px-4 text-sm" id="nav-username">Profile</button>
+        <button onclick="handleLogout()" class="btn-secondary py-1.5 px-4 text-sm text-red-400">Log Out</button>
+      </div>
+    </div>
+
+    <!-- Hamburger -->
+    <button id="hamburger" onclick="toggleMobileMenu()" class="md:hidden p-2 rounded-lg glass-card">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Mobile Menu -->
+  <div id="mobile-menu" class="md:hidden flex-col gap-2 px-4 pb-4 border-t border-white/10">
+    <button onclick="showPage('home');toggleMobileMenu()" class="w-full text-left py-2 text-slate-300 hover:text-white">🏠 Home</button>
+    <button onclick="showPage('feed');toggleMobileMenu()" class="w-full text-left py-2 text-slate-300 hover:text-white">📖 Blog Feed</button>
+    <button onclick="showPage('create');toggleMobileMenu()" class="w-full text-left py-2 text-slate-300 hover:text-white">✏️ Write</button>
+    <button onclick="showPage('messages');toggleMobileMenu()" class="w-full text-left py-2 text-slate-300 hover:text-white">✉️ Messages</button>
+    <button onclick="showPage('profile',{});toggleMobileMenu()" class="w-full text-left py-2 text-slate-300 hover:text-white">👤 Profile</button>
+    <button onclick="showPage('contact');toggleMobileMenu()" class="w-full text-left py-2 text-slate-300 hover:text-white">📩 Contact</button>
+    <div id="nav-auth-mobile" class="flex gap-2 pt-2">
+      <button onclick="showPage('login');toggleMobileMenu()" class="btn-secondary flex-1 text-sm py-2">Log In</button>
+      <button onclick="showPage('signup');toggleMobileMenu()" class="btn-primary flex-1 text-sm py-2">Sign Up</button>
+    </div>
+    <div id="nav-user-mobile" class="hidden pt-2">
+      <button onclick="handleLogout();toggleMobileMenu()" class="btn-secondary w-full text-sm py-2 text-red-400">Log Out</button>
+    </div>
+  </div>
+</nav>
+
+<!-- ─── PAGES WRAPPER ──────────────────────────────────────────────────────── -->
+<div class="pt-16">
+
+  <!-- ══ HOME PAGE ══════════════════════════════════════════════════════════ -->
+  <div id="page-home" class="page">
+    <!-- Hero -->
+    <section class="hero-bg min-h-[92vh] flex items-center justify-center px-4 relative overflow-hidden">
+      <!-- Background orbs -->
+      <div class="absolute top-20 left-10 w-72 h-72 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute bottom-20 right-10 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+      <div class="max-w-4xl mx-auto text-center fade-in relative z-10">
+        <!-- FIRE Badge -->
+        <div class="inline-flex items-center gap-2 glass-card rounded-full px-5 py-2 text-sm text-emerald-300 font-semibold mb-8 float">
+          <span class="text-xl fire-glow">🔥</span>
+          Financial Independence · Retire Early Community
+        </div>
+
+        <h1 class="text-5xl sm:text-6xl lg:text-7xl font-black leading-tight mb-6">
+          Create, Share,<br/>
+          <span class="gradient-text">Inspire.</span><br/>
+          <span class="text-slate-300 text-4xl sm:text-5xl font-bold">Discover What Can Be.</span>
+        </h1>
+
+        <p class="text-slate-400 text-lg sm:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
+          Join a passionate community pursuing financial freedom. Share your journey, learn from others, and light the FIRE of possibility.
+        </p>
+
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+          <button onclick="showPage('signup')" class="btn-primary text-base px-8 py-3">
+            🚀 Start Your Journey
+          </button>
+          <button onclick="showPage('feed')" class="btn-secondary text-base px-8 py-3">
+            📖 Read the Blog
+          </button>
+        </div>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-3 gap-6 mt-16 max-w-lg mx-auto">
+          <div class="glass-card rounded-2xl p-4">
+            <p class="text-2xl font-black text-emerald-400">FIRE</p>
+            <p class="text-slate-400 text-xs mt-1">Philosophy</p>
+          </div>
+          <div class="glass-card rounded-2xl p-4">
+            <p class="text-2xl font-black text-blue-400">∞</p>
+            <p class="text-slate-400 text-xs mt-1">Possibilities</p>
+          </div>
+          <div class="glass-card rounded-2xl p-4">
+            <p class="text-2xl font-black text-amber-400">🔥</p>
+            <p class="text-slate-400 text-xs mt-1">Community</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FIRE Explainer -->
+    <section class="py-20 px-4">
+      <div class="max-w-6xl mx-auto">
+        <h2 class="text-3xl font-black text-center text-white mb-3">What is <span class="gradient-text">FIRE</span>?</h2>
+        <p class="text-slate-400 text-center mb-12 max-w-xl mx-auto">Financial Independence, Retire Early — a movement built on smart saving, investing, and intentional living.</p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div class="glass-card rounded-2xl p-6 text-center hover:scale-105 transition-transform duration-300">
+            <div class="text-4xl mb-4">💰</div>
+            <h3 class="font-bold text-white mb-2">Save Aggressively</h3>
+            <p class="text-slate-400 text-sm">Aim for a 50–70% savings rate to build wealth fast.</p>
+          </div>
+          <div class="glass-card rounded-2xl p-6 text-center hover:scale-105 transition-transform duration-300">
+            <div class="text-4xl mb-4">📈</div>
+            <h3 class="font-bold text-white mb-2">Invest Wisely</h3>
+            <p class="text-slate-400 text-sm">Low-cost index funds, real estate, and compound growth.</p>
+          </div>
+          <div class="glass-card rounded-2xl p-6 text-center hover:scale-105 transition-transform duration-300">
+            <div class="text-4xl mb-4">🧘</div>
+            <h3 class="font-bold text-white mb-2">Live Intentionally</h3>
+            <p class="text-slate-400 text-sm">Spend on what matters. Cut what doesn't.</p>
+          </div>
+          <div class="glass-card rounded-2xl p-6 text-center hover:scale-105 transition-transform duration-300">
+            <div class="text-4xl mb-4">🏖️</div>
+            <h3 class="font-bold text-white mb-2">Retire Early</h3>
+            <p class="text-slate-400 text-sm">Achieve freedom in your 30s, 40s, or 50s.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Featured Posts -->
+    <section class="py-16 px-4 bg-white/[0.02]">
+      <div class="max-w-7xl mx-auto">
+        <div class="flex items-center justify-between mb-10">
+          <h2 class="text-3xl font-black text-white">Featured <span class="gradient-text">Stories</span></h2>
+          <button onclick="showPage('feed')" class="text-emerald-400 hover:underline text-sm font-semibold">View all →</button>
+        </div>
+        <div id="featured-posts" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <p class="text-slate-400 text-center col-span-3">Loading...</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="py-24 px-4">
+      <div class="max-w-3xl mx-auto text-center glass-card rounded-3xl p-12">
+        <span class="text-5xl fire-glow">🔥</span>
+        <h2 class="text-4xl font-black text-white mt-4 mb-4">Ready to ignite your <span class="gradient-text">FIRE</span>?</h2>
+        <p class="text-slate-400 mb-8">Join thousands pursuing financial independence. Share your story, inspire others.</p>
+        <button onclick="showPage('signup')" class="btn-primary text-lg px-10 py-4">Join whatcanbe.in</button>
+      </div>
+    </section>
+  </div>
+
+  <!-- ══ BLOG FEED ═══════════════════════════════════════════════════════════ -->
+  <div id="page-feed" class="page hidden">
+    <div class="max-w-7xl mx-auto px-4 py-12">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-10 gap-4">
+        <div>
+          <h1 class="text-4xl font-black text-white">Community <span class="gradient-text">Blog Feed</span></h1>
+          <p class="text-slate-400 mt-2">Stories, strategies, and insights from the FIRE community</p>
+        </div>
+        <button onclick="showPage('create')" class="btn-primary flex items-center gap-2">✏️ Write a Post</button>
+      </div>
+      <div id="all-posts" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <p class="text-slate-400 col-span-3 text-center">Loading posts...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ POST DETAIL ═════════════════════════════════════════════════════════ -->
+  <div id="page-post" class="page hidden">
+    <div class="max-w-3xl mx-auto px-4 py-12">
+      <div id="post-detail"><p class="text-slate-400">Loading...</p></div>
+    </div>
+  </div>
+
+  <!-- ══ CREATE POST ═════════════════════════════════════════════════════════ -->
+  <div id="page-create" class="page hidden">
+    <div class="max-w-3xl mx-auto px-4 py-12">
+      <h1 class="text-4xl font-black text-white mb-2">Share Your <span class="gradient-text">Story</span></h1>
+      <p class="text-slate-400 mb-8">Inspire the FIRE community with your journey, tips, or insights.</p>
+      <div class="glass-card rounded-2xl p-8 flex flex-col gap-5">
+        <div>
+          <label class="text-sm text-slate-400 font-medium block mb-1.5">Post Title</label>
+          <input id="post-title" type="text" placeholder="e.g. How I reached 50% savings rate at 28..." class="input-field" />
+        </div>
+        <div>
+          <label class="text-sm text-slate-400 font-medium block mb-1.5">Category</label>
+          <select id="post-tag" class="input-field">
+            <option value="FIRE">🔥 FIRE Journey</option>
+            <option value="Investing">📈 Investing</option>
+            <option value="Frugality">💡 Frugality</option>
+            <option value="Story">📖 Personal Story</option>
+            <option value="Other">✨ Other</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-sm text-slate-400 font-medium block mb-1.5">Content</label>
+          <textarea id="post-content" rows="10" placeholder="Write your post here..." class="input-field resize-none"></textarea>
+        </div>
+        <p id="post-error" class="text-red-400 text-sm"></p>
+        <button onclick="handleCreatePost()" class="btn-primary text-base py-3">🚀 Publish Post</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PROFILE ═════════════════════════════════════════════════════════════ -->
+  <div id="page-profile" class="page hidden">
+    <div class="max-w-5xl mx-auto px-4 py-12">
+      <div id="profile-content"><p class="text-slate-400">Loading profile...</p></div>
+    </div>
+  </div>
+
+  <!-- ══ MESSAGES ════════════════════════════════════════════════════════════ -->
+  <div id="page-messages" class="page hidden">
+    <div class="max-w-4xl mx-auto px-4 py-12">
+      <h1 class="text-4xl font-black text-white mb-8">Direct <span class="gradient-text">Messages</span></h1>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Inbox -->
+        <div>
+          <h2 class="text-lg font-bold text-white mb-4">Inbox</h2>
+          <div id="inbox-list" class="flex flex-col gap-3">
+            <p class="text-slate-400 text-sm">Loading...</p>
+          </div>
+        </div>
+        <!-- Compose / Conversation -->
+        <div id="dm-compose" class="hidden">
+          <h2 class="text-lg font-bold text-white mb-1">Conversation</h2>
+          <p id="dm-to-name" class="text-emerald-400 text-sm font-semibold mb-4"></p>
+          <input type="hidden" id="dm-recipient-id" />
+          <div id="conversation" class="glass-card rounded-2xl p-4 h-64 overflow-y-auto flex flex-col gap-1 mb-4">
+          </div>
+          <div class="flex gap-3">
+            <input id="dm-text" type="text" placeholder="Type a message..." class="input-field flex-1" onkeydown="if(event.key==='Enter')sendDM()" />
+            <button onclick="sendDM()" class="btn-primary px-5">Send</button>
+          </div>
+        </div>
+        <div id="dm-placeholder" class="glass-card rounded-2xl p-8 text-center text-slate-400 text-sm">
+          Select a conversation or message a blog author to start chatting.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SIGNUP ══════════════════════════════════════════════════════════════ -->
+  <div id="page-signup" class="page hidden">
+    <div class="min-h-[90vh] flex items-center justify-center px-4 py-12">
+      <div class="w-full max-w-md">
+        <div class="text-center mb-8">
+          <span class="text-4xl fire-glow">🔥</span>
+          <h1 class="text-3xl font-black text-white mt-3">Join <span class="gradient-text">whatcanbe.in</span></h1>
+          <p class="text-slate-400 mt-2">Start your FIRE journey today</p>
+        </div>
+        <div class="glass-card rounded-2xl p-8 flex flex-col gap-5">
+          <div>
+            <label class="text-sm text-slate-400 font-medium block mb-1.5">Full Name</label>
+            <input id="signup-name" type="text" placeholder="Your name" class="input-field" />
+          </div>
+          <div>
+            <label class="text-sm text-slate-400 font-medium block mb-1.5">Email</label>
+            <input id="signup-email" type="email" placeholder="you@example.com" class="input-field" />
+          </div>
+          <div>
+            <label class="text-sm text-slate-400 font-medium block mb-1.5">Password</label>
+            <input id="signup-pass" type="password" placeholder="Min 6 characters" class="input-field" />
+          </div>
+          <p id="signup-error" class="text-red-400 text-sm"></p>
+          <button onclick="handleSignup()" class="btn-primary text-base py-3">Create Account</button>
+          <p class="text-center text-slate-400 text-sm">
+            Already have an account? <button onclick="showPage('login')" class="text-emerald-400 hover:underline">Log in</button>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ LOGIN ═══════════════════════════════════════════════════════════════ -->
+  <div id="page-login" class="page hidden">
+    <div class="min-h-[90vh] flex items-center justify-center px-4 py-12">
+      <div class="w-full max-w-md">
+        <div class="text-center mb-8">
+          <span class="text-4xl fire-glow">🔥</span>
+          <h1 class="text-3xl font-black text-white mt-3">Welcome <span class="gradient-text">Back</span></h1>
+          <p class="text-slate-400 mt-2">Continue your journey</p>
+        </div>
+        <div class="glass-card rounded-2xl p-8 flex flex-col gap-5">
+          <div>
+            <label class="text-sm text-slate-400 font-medium block mb-1.5">Email</label>
+            <input id="login-email" type="email" placeholder="you@example.com" class="input-field" />
+          </div>
+          <div>
+            <label class="text-sm text-slate-400 font-medium block mb-1.5">Password</label>
+            <input id="login-pass" type="password" placeholder="Your password" class="input-field" />
+          </div>
+          <p id="login-error" class="text-sm"></p>
+          <button onclick="handleLogin()" class="btn-primary text-base py-3">Log In</button>
+          <button onclick="handleForgotPassword()" class="text-slate-400 text-sm hover:text-emerald-400 transition-colors">Forgot password?</button>
+          <p class="text-center text-slate-400 text-sm">
+            New here? <button onclick="showPage('signup')" class="text-emerald-400 hover:underline">Create an account</button>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ CONTACT ═════════════════════════════════════════════════════════════ -->
+  <div id="page-contact" class="page hidden">
+    <div class="max-w-3xl mx-auto px-4 py-20 text-center">
+      <span class="text-5xl">📩</span>
+      <h1 class="text-4xl font-black text-white mt-4 mb-4">Contact <span class="gradient-text">Us</span></h1>
+      <div class="glass-card rounded-2xl p-10 mt-8 text-left">
+        <p class="text-slate-300 text-lg leading-relaxed mb-6">
+          If you have questions about the website or features, feel free to send us a message. We will get back to you as soon as possible.
+        </p>
+        <div class="flex items-center gap-3 bg-white/5 rounded-xl px-5 py-4 border border-white/10">
+          <span class="text-2xl">✉️</span>
+          <a href="mailto:sarikakatta31@gmail.com" class="text-emerald-400 font-semibold hover:underline text-lg">
+            sarikakatta31@gmail.com
+          </a>
+        </div>
+        <div class="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+          <div class="bg-white/5 rounded-xl p-4">
+            <p class="text-2xl mb-2">⚡</p>
+            <p class="text-slate-300 font-semibold text-sm">Quick Response</p>
+            <p class="text-slate-500 text-xs mt-1">Usually within 24 hrs</p>
+          </div>
+          <div class="bg-white/5 rounded-xl p-4">
+            <p class="text-2xl mb-2">🔒</p>
+            <p class="text-slate-300 font-semibold text-sm">Private & Secure</p>
+            <p class="text-slate-500 text-xs mt-1">Your data is safe</p>
+          </div>
+          <div class="bg-white/5 rounded-xl p-4">
+            <p class="text-2xl mb-2">🤝</p>
+            <p class="text-slate-300 font-semibold text-sm">Friendly Team</p>
+            <p class="text-slate-500 text-xs mt-1">We love feedback!</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end pt-16 wrapper -->
+
+<!-- ─── FOOTER ─────────────────────────────────────────────────────────────── -->
+<footer class="border-t border-white/10 mt-16 py-10 px-4">
+  <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+    <div class="flex items-center gap-2">
+      <span class="text-xl fire-glow">🔥</span>
+      <span class="font-black gradient-text">whatcanbe</span><span class="text-slate-400">.in</span>
+    </div>
+    <div class="flex gap-6 text-sm text-slate-500">
+      <button onclick="showPage('home')" class="hover:text-emerald-400 transition-colors">Home</button>
+      <button onclick="showPage('feed')" class="hover:text-emerald-400 transition-colors">Blog</button>
+      <button onclick="showPage('contact')" class="hover:text-emerald-400 transition-colors">Contact</button>
+    </div>
+    <p class="text-slate-500 text-sm">© 2026 whatcanbe.in. All rights reserved.</p>
+  </div>
+</footer>
+
+<!-- ─── SCRIPTS ────────────────────────────────────────────────────────────── -->
+<script>
+  function toggleMobileMenu() {
+    const menu = document.getElementById("mobile-menu");
+    menu.classList.toggle("open");
+  }
+  // Sync mobile nav auth state
+  const origUpdateNav = window.updateNav;
+</script>
+<script type="module" src="./script.js"></script>
+
+</body>
+</html>
